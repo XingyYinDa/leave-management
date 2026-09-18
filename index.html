@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>员工请假管理系统 · 交互原型</title>
+<style>
+:root{
+  --blue:#2F6FB3; --blue-dk:#1F4E80; --blue-lt:#E8F1F9; --blue-bd:#C4D9EC;
+  --bg:#F6F9FC; --card:#FFFFFF; --line:#DFE8F1; --txt:#1F3A56; --sub:#5B7389;
+  --ok:#2E7D51; --ok-bg:#EAF5EF; --no:#B7322B; --no-bg:#FBEDEB; --wait:#9A6B0F; --wait-bg:#FCF4E3;
+  --mono:"Consolas","Courier New",monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.65}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--txt)}
+::placeholder{color:#9AB0C4}
+.num{font-variant-numeric:tabular-nums}
+
+/* ===== 登录页 ===== */
+#login{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+.proto-banner{background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:6px;padding:10px 18px;font-size:12.5px;color:var(--blue-dk);max-width:640px;text-align:center;margin-bottom:36px}
+.proto-banner b{color:var(--blue-dk)}
+.login-head{text-align:center;margin-bottom:28px}
+.login-head h1{font-size:26px;letter-spacing:1px;color:var(--blue-dk)}
+.login-head .sub{color:var(--sub);font-size:13px;margin-top:6px}
+.login-head .stamp-line{margin-top:14px;display:flex;align-items:center;gap:12px;color:var(--sub);font-size:12px}
+.login-head .stamp-line::before,.login-head .stamp-line::after{content:"";height:1px;width:70px;background:var(--blue-bd)}
+.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;width:100%;max-width:640px}
+.roster-card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 14px;text-align:center;transition:.15s;border-bottom:3px solid transparent}
+.roster-card:hover{border-color:var(--blue-bd);border-bottom-color:var(--blue);transform:translateY(-2px);box-shadow:0 6px 16px rgba(47,111,179,.12)}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--blue-lt);color:var(--blue-dk);font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.roster-card .nm{font-weight:700;font-size:15px}
+.roster-card .rl{font-size:12px;color:var(--sub);margin-top:2px}
+.login-tip{margin-top:26px;color:var(--sub);font-size:12.5px;text-align:center;max-width:560px}
+
+/* ===== 主框架 ===== */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{background:var(--card);border-bottom:1px solid var(--line);padding:0 22px;height:54px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;color:var(--blue-dk)}
+.logo .mark{width:26px;height:26px;background:var(--blue);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+.proto-tag{font-size:11px;background:var(--wait-bg);color:var(--wait);border:1px solid #EAD9AE;border-radius:3px;padding:0 6px;letter-spacing:1px}
+.topbar .me{margin-left:auto;display:flex;align-items:center;gap:10px}
+.me-chip{display:flex;align-items:center;gap:8px;background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:20px;padding:3px 14px 3px 4px}
+.me-chip .avatar{width:28px;height:28px;font-size:13px;margin:0}
+.me-chip .who{font-size:13px}.me-chip .who b{display:block;font-size:13px;line-height:1.3}
+.me-chip .who span{font-size:11px;color:var(--sub)}
+.btn-ghost{background:none;border:1px solid var(--line);border-radius:6px;padding:5px 12px;color:var(--sub);font-size:12.5px}
+.btn-ghost:hover{border-color:var(--blue-bd);color:var(--blue)}
+.body{display:flex;flex:1;align-items:stretch}
+.nav{width:190px;background:var(--card);border-right:1px solid var(--line);padding:16px 10px;flex-shrink:0}
+.nav .grp{font-size:11px;color:#8FA6BA;letter-spacing:2px;padding:10px 10px 4px}
+.nav a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;color:var(--txt);text-decoration:none;font-size:13.5px;margin-bottom:2px;position:relative}
+.nav a:hover{background:var(--bg)}
+.nav a.on{background:var(--blue-lt);color:var(--blue-dk);font-weight:700}
+.nav a .bdg{margin-left:auto;background:var(--no);color:#fff;font-size:11px;border-radius:9px;padding:0 7px;line-height:17px;font-weight:700}
+.main{flex:1;padding:24px 28px 60px;max-width:1060px;min-width:0}
+.page-head{margin-bottom:18px}
+.page-head h2{font-size:19px;color:var(--blue-dk);display:flex;align-items:center;gap:10px}
+.eyebrow{font-size:11px;color:var(--blue);background:var(--blue-lt);border:1px solid var(--blue-bd);border-radius:3px;padding:1px 7px;letter-spacing:.5px;font-weight:400;vertical-align:2px}
+.page-head p{color:var(--sub);font-size:13px;margin-top:4px}
+
+/* ===== 通用组件 ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin-bottom:16px}
+.card h3{font-size:15px;margin-bottom:12px;color:var(--txt)}
+.btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:14px;font-weight:700;letter-spacing:1px}
+.btn:hover{background:var(--blue-dk)}
+.btn.sec{background:var(--card);color:var(--blue);border:1px solid var(--blue-bd)}
+.btn.sec:hover{background:var(--blue-lt)}
+.btn.dngr{background:var(--card);color:var(--no);border:1px solid #EBCCCB}
+.btn.sm{padding:4px 12px;font-size:12.5px;font-weight:400}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label.fl{display:block;font-size:12.5px;color:var(--sub);margin-bottom:5px}
+.inp{width:100%;border:1px solid var(--line);border-radius:6px;padding:7px 10px;background:#fff;outline:none}
+.inp:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(47,111,179,.12)}
+textarea.inp{resize:vertical;min-height:64px}
+.frow{display:flex;gap:14px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:150px}
+.hint{font-size:12px;color:var(--sub);margin-top:4px}
+.err{font-size:12px;color:var(--no);margin-top:4px;display:none}
+.err.show{display:block}
+
+/* 类型选择 */
+.typegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.typegrid label{border:1px solid var(--line);border-radius:6px;padding:8px 4px;text-align:center;font-size:13px;cursor:pointer;position:relative;background:#fff}
+.typegrid input{display:none}
+.typegrid input:checked+span{color:var(--blue-dk);font-weight:700}
+.typegrid label:has(input:checked){border-color:var(--blue);background:var(--blue-lt);box-shadow:0 0 0 1px var(--blue)}
+.typegrid label::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:6px 0 0 6px;background:var(--tc,#ccc)}
+
+/* 时长摘要条 */
+.durbar{display:flex;align-items:baseline;gap:14px;background:var(--blue-lt);border:1px dashed var(--blue-bd);border-radius:6px;padding:10px 16px;margin-top:14px}
+.durbar .big{font-size:30px;font-weight:700;color:var(--blue-dk);font-variant-numeric:tabular-nums;line-height:1.1}
+.durbar .cap{font-size:12px;color:var(--sub)}
+.durbar .rule{margin-left:auto;font-size:11.5px;color:var(--sub);text-align:right}
+
+/* ===== 请假单卡片 ===== */
+.ticket{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:12px;position:relative;overflow:hidden;display:flex}
+.ticket::before{content:"";width:4px;flex-shrink:0;background:var(--tc,#ccc)}
+.ticket .t-body{flex:1;padding:13px 18px;min-width:0}
+.t-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.t-no{font-family:var(--mono);font-size:12px;color:var(--sub)}
+.t-type{font-weight:700;font-size:15px}
+.t-name{color:var(--sub);font-size:13px}
+.t-meta{display:flex;gap:18px;flex-wrap:wrap;color:var(--sub);font-size:12.5px;margin-top:5px}
+.t-meta b{color:var(--txt);font-weight:600}
+.t-reason{font-size:12.5px;color:var(--sub);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-foot{display:flex;align-items:center;gap:10px;margin-top:9px;flex-wrap:wrap}
+.t-foot .ago{font-size:11.5px;color:#9AB0C4;margin-left:auto}
+.t-side{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0 20px;border-left:1px dashed var(--line);flex-shrink:0}
+.stamp{border:2px solid;border-radius:5px;padding:1px 10px;font-weight:700;font-size:13px;letter-spacing:3px;transform:rotate(-5deg);white-space:nowrap}
+.stamp.ok{color:var(--ok);border-color:var(--ok)}
+.stamp.no{color:var(--no);border-color:var(--no)}
+.stamp.wait{color:var(--wait);border-color:var(--wait);border-style:dashed}
+.ticket.urged{box-shadow:0 0 0 2px var(--no), 0 4px 14px rgba(183,50,43,.15)}
+.urge-flag{background:var(--no);color:#fff;font-size:11px;border-radius:3px;padding:1px 7px;letter-spacing:1px}
+.opinion{background:var(--no-bg);border-left:3px solid var(--no);border-radius:0 4px 4px 0;padding:6px 10px;font-size:12.5px;color:#8C2B25;margin-top:8px}
+.dele-tag{background:#F0EAF9;color:#6B4FA0;border:1px solid #D9CCEF;font-size:11px;border-radius:3px;padding:0 6px}
+.empty{padding:44px 20px;text-align:center;color:var(--sub);font-size:13px}
+.empty .big{font-size:34px;margin-bottom:8px;filter:grayscale(.3)}
+
+/* ===== 表格 ===== */
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:var(--blue-lt);color:var(--blue-dk);font-weight:700;text-align:left;padding:8px 10px;white-space:nowrap;border-bottom:1px solid var(--blue-bd)}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:#FAFCFE}
+.st{font-size:12px;border-radius:3px;padding:1px 8px;white-space:nowrap}
+.st.wait{background:var(--wait-bg);color:var(--wait)}
+.st.ok{background:var(--ok-bg);color:var(--ok)}
+.st.no{background:var(--no-bg);color:var(--no)}
+.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.filters>div{min-width:130px}
+.filters .grow{flex:1}
+
+/* 年度汇总条形 */
+.sumrow{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.sumrow .lb{width:110px;font-size:13px;text-align:right;color:var(--sub);flex-shrink:0}
+.sumrow .bar{flex:1;height:20px;background:var(--bg);border-radius:3px;overflow:hidden;position:relative}
+.sumrow .bar i{display:block;height:100%;border-radius:3px;min-width:2px}
+.sumrow .v{width:64px;font-weight:700;font-variant-numeric:tabular-nums;flex-shrink:0}
+
+/* toast / modal */
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--txt);color:#fff;padding:9px 22px;border-radius:6px;font-size:13.5px;opacity:0;transition:.25s;z-index:200;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+#toast.show{opacity:1}
+#mask{position:fixed;inset:0;background:rgba(31,58,86,.42);display:none;align-items:center;justify-content:center;z-index:100}
+#mask.show{display:flex}
+.modal{background:#fff;border-radius:10px;width:min(430px,92vw);padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;margin-bottom:14px;color:var(--blue-dk)}
+.modal .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.modal textarea{min-height:70px}
+
+@media (max-width:760px){
+  .body{flex-direction:column}
+  .nav{width:100%;display:flex;overflow-x:auto;padding:8px;border-right:none;border-bottom:1px solid var(--line)}
+  .nav .grp{display:none}
+  .nav a{white-space:nowrap;margin-bottom:0}
+  .main{padding:16px 14px 50px}
+  .t-side{padding:0 12px}
+  .ticket .t-body{padding:12px 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="login">
+  <div class="proto-banner"><b>交互原型</b> · 对应《员工请假管理系统 PRD v1.0》，覆盖 F1~F6 全部 P0 功能。演示数据仅存于本机浏览器，可在 HR 视角「数据管理」中一键重置。</div>
+  <div class="login-head">
+    <h1>员工请假管理系统</h1>
+    <div class="sub">部门级轻量方案 · 花名册免密登录</div>
+    <div class="stamp-line">选择你的身份进入（PRD F5 · 花名册免密）</div>
+  </div>
+  <div class="roster-grid" id="rosterGrid"></div>
+  <div class="login-tip">免密登录基于部门内部互信环境（PRD 附录A 前提假设）；切换身份即可体验员工、经理、代批主管、HR 四种视角。</div>
+</div>
+
+<!-- 主界面 -->
+<div id="app">
+  <div class="topbar">
+    <div class="logo"><div class="mark">假</div>请假管理<span class="proto-tag">原型</span></div>
+    <div class="me">
+      <div class="me-chip" id="meChip"></div>
+      <button class="btn-ghost" onclick="logout()">退出</button>
+    </div>
+  </div>
+  <div class="body">
+    <div class="nav" id="nav"></div>
+    <div class="main" id="main"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="mask"><div class="modal" id="modalBox"></div></div>
+
+<script>
+/* ================= 数据层 ================= */
+var LS_KEY='leave-proto-v1', LS_SES='leave-proto-ses';
+var TYPES=[
+ {k:'事假',c:'#2F6FB3'},{k:'病假',c:'#D97B29'},{k:'年假',c:'#2E8B57'},{k:'婚假',c:'#C2557E'},
+ {k:'产假/陪产假',c:'#7B5EA7'},{k:'丧假',c:'#78909C'},{k:'调休',c:'#1E9E9E'}
+];
+var ROLES={employee:'员工',manager:'部门经理',delegate:'代批主管',hr:'HR/行政'};
+var state=null, me=null, page='';
+
+function uid(){return Math.random().toString(36).slice(2,9)}
+function iso(d){var p=function(n){return (n<10?'0':'')+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+function addDays(base,n){var d=new Date(base);d.setDate(d.getDate()+n);return d}
+function fmtDT(ts){var d=new Date(ts),p=function(n){return (n<10?'0':'')+n};return (d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())}
+function fmtD(s){return s?s.replace(/-/g,'/').slice(5):''}
+function ago(ts){var h=(Date.now()-ts)/36e5;if(h<1)return Math.max(1,Math.round(h*60))+' 分钟前';if(h<24)return Math.round(h)+' 小时前';return Math.round(h/24)+' 天前'}
+
+function seed(){
+  var now=new Date(),today=iso(now);
+  return {
+    seq:6,
+    roster:[
+      {id:'m1',name:'张伟',role:'manager'},
+      {id:'d1',name:'李娜',role:'delegate'},
+      {id:'h1',name:'王芳',role:'hr'},
+      {id:'e1',name:'陈晨',role:'employee'},
+      {id:'e2',name:'刘洋',role:'employee'},
+      {id:'e3',name:'赵磊',role:'employee'},
+      {id:'e4',name:'孙倩',role:'employee'}
+    ],
+    leaves:[
+      {id:uid(),no:'QJ-001',type:'年假',start:{d:iso(addDays(now,3)),pm:0},end:{d:iso(addDays(now,5)),pm:1},reason:'家人出游，提前安排好手头工作',by:'e1',status:'待审批',submit:Date.now()-26*36e5,urge:0,urgeAt:0},
+      {id:uid(),no:'QJ-002',type:'调休',start:{d:iso(addDays(now,1)),pm:1},end:{d:iso(addDays(now,2)),pm:0},reason:'上周末加班调休半天',by:'e4',status:'待审批',submit:Date.now()-3*36e5,urge:0,urgeAt:0},
+      {id:uid(),no:'QJ-003',type:'年假',start:{d:iso(addDays(now,10)),pm:0},end:{d:iso(addDays(now,12)),pm:1},reason:'国庆前休假，已与代批主管交接',by:'m1',status:'待审批',submit:Date.now()-1*36e5,urge:0,urgeAt:0},
+      {id:uid(),no:'QJ-004',type:'病假',start:{d:iso(addDays(now,-2)),pm:0},end:{d:iso(addDays(now,-1)),pm:1},reason:'急性肠胃炎，附医院证明',by:'e2',status:'已通过',submit:Date.now()-72*36e5,reviewer:'张伟',reviewAt:Date.now()-60*36e5},
+      {id:uid(),no:'QJ-005',type:'事假',start:{d:iso(addDays(now,7)),pm:0},end:{d:iso(addDays(now,7)),pm:1},reason:'上午去车管所办理业务',by:'e3',status:'已驳回',submit:Date.now()-48*36e5,reviewer:'张伟',reviewAt:Date.now()-40*36e5,opinion:'当天是项目上线日，建议改期，如确有急事请电话联系我。'}
+    ]
+  };
+}
+function load(){try{state=JSON.parse(localStorage.getItem(LS_KEY))}catch(e){}if(!state||!state.roster){state=seed();save()}}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){}}
+function user(id){for(var i=0;i<state.roster.length;i++)if(state.roster[i].id===id)return state.roster[i];return null}
+function nameOf(id){var u=user(id);return u?u.name:'?'}
+function typeColor(t){for(var i=0;i<TYPES.length;i++)if(TYPES[i].k===t)return TYPES[i].c;return '#999'}
+
+/* 审批人判定（PRD F2）：申请人=经理 → 代批人；否则 → 经理 */
+function reviewerOf(lv){
+  var a=user(lv.by);
+  if(a&&a.role==='manager'){
+    var dg=null;for(var i=0;i<state.roster.length;i++)if(state.roster[i].role==='delegate'){dg=state.roster[i];break}
+    return dg;
+  }
+  for(var j=0;j<state.roster.length;j++)if(state.roster[j].role==='manager')return state.roster[j];
+  return null;
+}
+/* 时长计算（PRD 4.3-Q1 默认口径：自然日、半天精度） */
+function duration(s,e){
+  var d1=new Date(s.d),d2=new Date(e.d);
+  var days=Math.round((d2-d1)/864e5)+(e.pm?0.5:0)-(s.pm?0.5:0);
+  return days;
+}
+function validRange(s,e){return duration(s,e)>0}
+/* 超时判定（PRD 4.3-Q2 默认 24h，可调） */
+var OVERDUE_H=24;
+function isOverdue(lv){return lv.status==='待审批'&&(Date.now()-lv.submit)>OVERDUE_H*36e5}
+function myPending(){
+  if(!me)return [];
+  var r=[];for(var i=0;i<state.leaves.length;i++){var lv=state.leaves[i];if(lv.status==='待审批'&&reviewerOf(lv)&&reviewerOf(lv).id===me.id)r.push(lv)}
+  r.sort(function(a,b){return (b.urge||0)-(a.urge||0)||a.submit-b.submit});
+  return r;
+}
+
+/* ================= 视图层 ================= */
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show')},2200)}
+
+function renderLogin(){
+  var h='';
+  state.roster.forEach(function(u){
+    h+='<div class="roster-card" onclick="login(\''+u.id+'\')"><div class="avatar">'+u.name.charAt(0)+'</div><div class="nm">'+esc(u.name)+'</div><div class="rl">'+ROLES[u.role]+(u.role==='delegate'?'（代批：张伟）':'')+'</div></div>';
+  });
+  document.getElementById('rosterGrid').innerHTML=h;
+}
+
+function login(id){
+  me=user(id);localStorage.setItem(LS_SES,id);
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='flex';
+  var first={employee:'form',manager:'approve',delegate:'approve',hr:'ledger'}[me.role]||'form';
+  go(first);
+}
+function logout(){me=null;localStorage.removeItem(LS_SES);location.reload()}
+
+function go(p){
+  page=p;renderNav();renderMain();
+  var badges=document.querySelectorAll('.nav a .bdg');
+  window.scrollTo(0,0);
+}
+function renderNav(){
+  var items=[];
+  items.push({k:'form',t:'我要请假',who:['employee','manager','delegate']});
+  items.push({k:'mine',t:'我的请假',who:['employee','manager','delegate','hr']});
+  items.push({k:'approve',t:'待我审批',who:['manager','delegate'],badge:true});
+  items.push({k:'ledger',t:'部门台账',who:['manager','hr']});
+  items.push({k:'summary',t:'年度汇总',who:['hr']});
+  items.push({k:'roster',t:'花名册',who:['hr']});
+  items.push({k:'data',t:'数据管理',who:['hr']});
+  var pend=me&&(me.role==='manager'||me.role==='delegate')?myPending():[];
+  var h='<div class="grp">请假</div>';
+  items.forEach(function(it){
+    if(it.who.indexOf(me.role)<0)return;
+    h+='<a href="javascript:;" class="'+(page===it.k?'on':'')+'" onclick="go(\''+it.k+'\')">'+it.t+(it.badge&&pend.length?'<span class="bdg">'+pend.length+'</span>':'')+'</a>';
+    if(it.k==='mine')h+='<div class="grp">审批与台账</div>';
+    if(it.k==='ledger')h+='<div class="grp">管理</div>';
+  });
+  document.getElementById('nav').innerHTML=h;
+  var chip=document.getElementById('meChip');
+  chip.innerHTML='<div class="avatar">'+me.name.charAt(0)+'</div><div class="who"><b>'+esc(me.name)+'</b><span>'+ROLES[me.role]+'</span></div>';
+}
+
+/* ================= 各页面 ================= */
+function renderMain(){
+  var h='';
+  if(page==='form')h=pgForm();
+  else if(page==='mine')h=pgMine();
+  else if(page==='approve')h=pgApprove();
+  else if(page==='ledger')h=pgLedger();
+  else if(page==='summary')h=pgSummary();
+  else if(page==='roster')h=pgRoster();
+  else if(page==='data')h=pgData();
+  document.getElementById('main').innerHTML=h;
+  if(page==='form')bindForm();
+  if(page==='ledger')bindLedger();
+  if(page==='summary')bindSummary();
+}
+
+/* ---- F1 请假申请 ---- */
+function pgForm(){
+  var h='<div class="page-head"><h2>我要请假 <span class="eyebrow">PRD F1</span></h2><p>提交后即时进入审批流（单级审批，PRD F2）；时长按自然日计算、可精确到半天（4.3-Q1 默认口径）。</p></div>';
+  h+='<div class="card"><h3>请假单</h3>';
+  h+='<label class="fl">请假类型（7 类，PRD F1）</label><div class="typegrid">';
+  TYPES.forEach(function(t,i){h+='<label style="--tc:'+t.c+'"><input type="radio" name="ltype" value="'+t.k+'" '+(i===0?'checked':'')+'><span>'+t.k+'</span></label>'});
+  h+='</div>';
+  h+='<div style="height:14px"></div><div class="frow">';
+  h+='<div><label class="fl">开始</label><div style="display:flex;gap:8px"><input type="date" class="inp" id="fStart"><select class="inp" id="fStartPm" style="width:88px"><option value="0">上午</option><option value="1">下午</option></select></div></div>';
+  h+='<div><label class="fl">结束</label><div style="display:flex;gap:8px"><input type="date" class="inp" id="fEnd"><select class="inp" id="fEndPm" style="width:88px"><option value="0">上午</option><option value="1">下午</option></select></div></div>';
+  h+='</div>';
+  h+='<div style="height:12px"></div><label class="fl">事由</label><textarea class="inp" id="fReason" placeholder="简要说明请假事由，便于审批人判断"></textarea>';
+  h+='<div class="err" id="fErr"></div>';
+  h+='<div class="durbar"><div><div class="big num" id="fDur">—</div><div class="cap">天（自然日）</div></div><div class="rule">时长自动计算<br>跨节假日不顺延、不扣减</div></div>';
+  h+='<div style="margin-top:16px;text-align:right"><button class="btn" id="fSubmit">提交申请</button></div>';
+  h+='</div>';
+  h+='<div class="card"><h3>当前规则提示</h3><ul style="padding-left:18px;color:var(--sub);font-size:13px;line-height:2"><li>只记流水、不做余额管控，年假/调休余额年底人工核对（PRD Non-goals）</li><li>提交超过 24 小时未审批，可在「我的请假」中催办（PRD F3）</li><li>驳回时审批人必须填写意见，你可据此修改后重新提交</li></ul></div>';
+  return h;
+}
+function bindForm(){
+  var s=document.getElementById('fStart'),e=document.getElementById('fEnd'),sp=document.getElementById('fStartPm'),ep=document.getElementById('fEndPm');
+  var t=new Date();s.value=iso(addDays(t,1));e.value=iso(addDays(t,1));
+  function upd(){
+    var d=duration({d:s.value,pm:+sp.value},{d:e.value,pm:+ep.value});
+    document.getElementById('fDur').textContent=d>0?d:'—';
+  }
+  [s,e,sp,ep].forEach(function(el){el.addEventListener('change',upd)});
+  upd();
+  document.getElementById('fSubmit').onclick=function(){
+    var err=document.getElementById('fErr');
+    var type=(document.querySelector('input[name=ltype]:checked')||{}).value;
+    var ss={d:s.value,pm:+sp.value},ee={d:e.value,pm:+ep.value};
+    if(!s.value||!e.value||!validRange(ss,ee)){err.textContent='结束时间必须晚于开始时间（同一天需为上午→下午）。';err.classList.add('show');return}
+    var reason=document.getElementById('fReason').value.trim();
+    if(!reason){err.textContent='请填写请假事由。';err.classList.add('show');return}
+    err.classList.remove('show');
+    state.seq++;
+    var no='QJ-'+('00'+state.seq).slice(-3);
+    state.leaves.push({id:uid(),no:no,type:type,start:ss,end:ee,reason:reason,by:me.id,status:'待审批',submit:Date.now(),urge:0,urgeAt:0});
+    save();toast('已提交 '+no+'，等待 '+nameOf(reviewerOf(state.leaves[state.leaves.length-1]).id)+' 审批');
+    go('mine');
+  };
+}
+
+/* ---- 请假单卡片 ---- */
+function ticketHTML(lv,opt){
+  opt=opt||{};
+  var tc=typeColor(lv.type);
+  var st=lv.status==='已通过'?'ok':(lv.status==='已驳回'?'no':'wait');
+  var rv=reviewerOf(lv);
+  var h='<div class="ticket'+(opt.urged?' urged':'')+'" style="--tc:'+tc+'">';
+  h+='<div class="t-body">';
+  h+='<div class="t-top"><span class="t-no">'+lv.no+'</span><span class="t-type" style="color:'+tc+'">'+lv.type+'</span>';
+  if(opt.showName)h+='<span class="t-name">'+esc(nameOf(lv.by))+'</span>';
+  if(lv.by==='m1'&&opt.showName)h+='<span class="dele-tag">经理假 · 由代批处理</span>';
+  h+='</div>';
+  h+='<div class="t-meta"><span>时间 <b>'+fmtD(lv.start.d)+(lv.start.pm?' 下午':' 上午')+' ~ '+fmtD(lv.end.d)+(lv.end.pm?' 下午':' 上午')+'</b></span><span>时长 <b class="num">'+duration(lv.start,lv.end)+' 天</b></span>';
+  h+='<span>审批人 <b>'+(lv.status==='待审批'?esc(rv?rv.name:'')+'（'+(lv.by==='m1'?'代批':'经理')+'）':esc(lv.reviewer||''))+'</b></span></div>';
+  h+='<div class="t-reason">事由：'+esc(lv.reason)+'</div>';
+  h+='<div class="t-foot">';
+  if(opt.approve){
+    h+='<button class="btn sm" onclick="review(\''+lv.id+'\',1)">通过</button><button class="btn sm dngr" onclick="review(\''+lv.id+'\',0)">驳回</button>';
+    if(isOverdue(lv))h+='<span class="st wait">超时 '+Math.floor((Date.now()-lv.submit)/36e5-24)+'h</span>';
+  }
+  if(opt.urge){
+    if(isOverdue(lv))h+='<button class="btn sm sec" onclick="urge(\''+lv.id+'\')">催办</button>';
+    else h+='<span class="hint">提交未满 24h，暂不可催办</span>';
+  }
+  if(lv.urge>0)h+='<span class="urge-flag">已被催办 ×'+lv.urge+'</span>';
+  h+='<span class="ago">提交于 '+fmtDT(lv.submit)+'（'+ago(lv.submit)+'）</span></div>';
+  if(lv.opinion)h+='<div class="opinion"><b>驳回意见：</b>'+esc(lv.opinion)+'</div>';
+  h+='</div>';
+  h+='<div class="t-side"><div class="stamp '+st+'">'+lv.status+'</div>'+(lv.status!=='待审批'?'<span class="hint num">'+fmtDT(lv.reviewAt)+'</span>':'')+'</div>';
+  h+='</div>';
+  return h;
+}
+
+/* ---- 我的请假 ---- */
+function pgMine(){
+  var h='<div class="page-head"><h2>我的请假 <span class="eyebrow">PRD F1 · US2/US4</span></h2><p>随时查看审批状态；超过 24 小时未审批的申请可催办（PRD F3 · US3）。</p></div>';
+  var mine=state.leaves.filter(function(l){return l.by===me.id}).sort(function(a,b){return b.submit-a.submit});
+  if(!mine.length)h+='<div class="card"><div class="empty"><div class="big">🗒</div>还没有请假记录<br>点击左侧「我要请假」提交第一张请假单</div></div>';
+  else mine.forEach(function(l){h+=ticketHTML(l,{urge:true})});
+  return h;
+}
+
+/* ---- 待我审批 ---- */
+function pgApprove(){
+  var h='<div class="page-head"><h2>待我审批 <span class="eyebrow">PRD F2/F3 · US5~US7</span></h2>';
+  var isDele=me.role==='delegate';
+  h+='<p>'+(isDele?'张伟经理休假期间，其本人提交的申请由你代批，代批记录留痕。':'待办按催办优先排序；被催办的申请红框高亮（PRD F3）。')+'</p></div>';
+  var pend=myPending();
+  if(!pend.length)h+='<div class="card"><div class="empty"><div class="big">✓</div>没有待审批的申请</div></div>';
+  else pend.forEach(function(l){h+=ticketHTML(l,{approve:true,showName:l.by==='m1',urged:l.urge>0})});
+  return h;
+}
+function review(id,pass){
+  var lv=null;for(var i=0;i<state.leaves.length;i++)if(state.leaves[i].id===id)lv=state.leaves[i];
+  if(!lv)return;
+  if(pass){
+    lv.status='已通过';lv.reviewer=me.name;lv.reviewAt=Date.now();lv.opinion='';
+    save();toast('已通过 '+lv.no+'（'+nameOf(lv.by)+' 的'+lv.type+'）');go('approve');
+  }else{
+    openModal('<h3>驳回 '+lv.no+'</h3><label class="fl">驳回意见（必填，PRD F2）</label><textarea class="inp" id="mOp" placeholder="说明驳回原因，便于员工修改后重新提交"></textarea><div class="err" id="mErr">请填写驳回意见</div><div class="acts"><button class="btn sm sec" onclick="closeModal()">取消</button><button class="btn sm dngr" onclick="doReject(\''+id+'\')">确认驳回</button></div>');
+  }
+}
+function doReject(id){
+  var op=document.getElementById('mOp').value.trim();
+  if(!op){document.getElementById('mErr').classList.add('show');return}
+  for(var i=0;i<state.leaves.length;i++)if(state.leaves[i].id===id){
+    state.leaves[i].status='已驳回';state.leaves[i].reviewer=me.name;state.leaves[i].reviewAt=Date.now();state.leaves[i].opinion=op;
+  }
+  save();closeModal();toast('已驳回并记录意见');go('approve');
+}
+function urge(id){
+  for(var i=0;i<state.leaves.length;i++)if(state.leaves[i].id===id){
+    state.leaves[i].urge=(state.leaves[i].urge||0)+1;state.leaves[i].urgeAt=Date.now();
+  }
+  save();toast('已向审批人发送催办');renderMain();
+}
+
+/* ---- F4 部门台账 ---- */
+var ledgerFilter={month:'',who:'',type:''};
+function pgLedger(){
+  var h='<div class="page-head"><h2>部门台账 <span class="eyebrow">PRD F4 · US8/US10</span></h2><p>全员请假流水，支持按月、按人、按类型筛选；一键导出 CSV 报送（PRD F4 · US11）。</p></div>';
+  var months={};
+  state.leaves.forEach(function(l){months[l.start.d.slice(0,7)]=1});
+  var nowM=iso(new Date()).slice(0,7);
+  if(!ledgerFilter.month&&months[nowM])ledgerFilter.month=nowM;
+  h+='<div class="card"><div class="filters">';
+  h+='<div><label class="fl">月份</label><select class="inp" id="lfMonth"><option value="">全部</option>';
+  Object.keys(months).sort().reverse().forEach(function(m){h+='<option value="'+m+'"'+(ledgerFilter.month===m?' selected':'')+'>'+m+'</option>'});
+  h+='</select></div>';
+  h+='<div><label class="fl">人员</label><select class="inp" id="lfWho"><option value="">全部</option>';
+  state.roster.forEach(function(u){h+='<option value="'+u.id+'"'+(ledgerFilter.who===u.id?' selected':'')+'>'+esc(u.name)+'</option>'});
+  h+='</select></div>';
+  h+='<div><label class="fl">类型</label><select class="inp" id="lfType"><option value="">全部</option>';
+  TYPES.forEach(function(t){h+='<option'+(ledgerFilter.type===t.k?' selected':'')+'>'+t.k+'</option>'});
+  h+='</select></div>';
+  h+='<div class="grow" style="text-align:right"><button class="btn sec sm" onclick="exportCSV()">导出 CSV</button></div>';
+  h+='</div>';
+  h+='<div class="tblwrap"><table class="tbl"><tr><th>单号</th><th>姓名</th><th>类型</th><th>开始</th><th>结束</th><th>时长</th><th>审批人</th><th>状态</th><th>审批意见</th></tr>';
+  var rows=ledgerRows();
+  if(!rows.length)h+='<tr><td colspan="9" style="text-align:center;color:var(--sub);padding:26px">当前筛选条件下没有记录</td></tr>';
+  rows.forEach(function(l){
+    h+='<tr><td class="num">'+l.no+'</td><td>'+esc(nameOf(l.by))+'</td><td style="color:'+typeColor(l.type)+';font-weight:600">'+l.type+'</td><td>'+fmtD(l.start.d)+(l.start.pm?' 下午':' 上午')+'</td><td>'+fmtD(l.end.d)+(l.end.pm?' 下午':' 上午')+'</td><td class="num">'+duration(l.start,l.end)+' 天</td><td>'+esc(l.status==='待审批'?(reviewerOf(l)?reviewerOf(l).name:''):(l.reviewer||''))+'</td><td><span class="st '+(l.status==='已通过'?'ok':(l.status==='已驳回'?'no':'wait'))+'">'+l.status+'</span></td><td style="color:var(--sub);max-width:180px">'+esc(l.opinion||'—')+'</td></tr>';
+  });
+  h+='</table></div>';
+  var tot=rows.reduce(function(s,l){return s+duration(l.start,l.end)},0);
+  h+='<div class="hint" style="margin-top:10px">共 '+rows.length+' 条 · 合计 <b class="num">'+tot+'</b> 天（自然日）</div></div>';
+  return h;
+}
+function ledgerRows(){
+  return state.leaves.filter(function(l){
+    if(ledgerFilter.month&&l.start.d.slice(0,7)!==ledgerFilter.month)return false;
+    if(ledgerFilter.who&&l.by!==ledgerFilter.who)return false;
+    if(ledgerFilter.type&&l.type!==ledgerFilter.type)return false;
+    return true;
+  }).sort(function(a,b){return b.submit-a.submit});
+}
+function bindLedger(){
+  document.getElementById('lfMonth').onchange=function(){ledgerFilter.month=this.value;renderMain()};
+  document.getElementById('lfWho').onchange=function(){ledgerFilter.who=this.value;renderMain()};
+  document.getElementById('lfType').onchange=function(){ledgerFilter.type=this.value;renderMain()};
+}
+function download(name,content,mime){
+  var b=new Blob(['\uFEFF'+content],{type:mime||'text/csv'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+}
+function exportCSV(){
+  var rows=ledgerRows();
+  var head='单号,姓名,类型,开始,结束,时长(天),审批人,状态,驳回/审批意见,提交时间';
+  var body=rows.map(function(l){
+    return [l.no,nameOf(l.by),l.type,l.start.d+(l.start.pm?' 下午':' 上午'),l.end.d+(l.end.pm?' 下午':' 上午'),duration(l.start,l.end),l.status==='待审批'?(reviewerOf(l)?reviewerOf(l).name:''):(l.reviewer||''),l.status,'"'+String(l.opinion||'').replace(/"/g,'""')+'"',new Date(l.submit).toLocaleString()].join(',');
+  });
+  download('请假台账-'+iso(new Date())+'.csv',head+'\n'+body.join('\n'));
+  toast('已导出 '+rows.length+' 条台账记录');
+}
+
+/* ---- 年度汇总 ---- */
+var sumWho='';
+function pgSummary(){
+  var h='<div class="page-head"><h2>年度汇总 <span class="eyebrow">PRD F4 · US12</span></h2><p>按人查看各类假期年度累计，作为年底余额人工核对的依据（Non-goals：系统不做余额管控）。</p></div>';
+  h+='<div class="card"><div class="filters"><div><label class="fl">选择人员</label><select class="inp" id="sfWho">';
+  state.roster.forEach(function(u){h+='<option value="'+u.id+'"'+(sumWho===u.id?' selected':'')+'>'+esc(u.name)+'（'+ROLES[u.role]+'）</option>'});
+  h+='</select></div></div>';
+  var uid0=sumWho||state.roster[0].id;
+  var y=new Date().getFullYear();
+  var mine=state.leaves.filter(function(l){return l.by===uid0&&l.status==='已通过'&&l.start.d.slice(0,4)==''+y});
+  h+='<h3 style="margin-bottom:14px">'+esc(nameOf(uid0))+' · '+y+' 年 已通过假期累计</h3>';
+  if(!mine.length)h+='<div class="empty">该员工今年暂无已通过的请假记录</div>';
+  var max=0.5;
+  TYPES.forEach(function(t){
+    var d=mine.filter(function(l){return l.type===t.k}).reduce(function(s,l){return s+duration(l.start,l.end)},0);
+    if(d>max)max=d;
+  });
+  TYPES.forEach(function(t){
+    var d=mine.filter(function(l){return l.type===t.k}).reduce(function(s,l){return s+duration(l.start,l.end)},0);
+    h+='<div class="sumrow"><div class="lb">'+t.k+'</div><div class="bar"><i style="width:'+(d/max*100)+'%;background:'+t.c+'"></i></div><div class="v num">'+d+' 天</div></div>';
+  });
+  var tot=mine.reduce(function(s,l){return s+duration(l.start,l.end)},0);
+  h+='<div class="hint" style="margin-top:8px">全年合计 <b class="num">'+tot+'</b> 天 · 仅统计「已通过」，待审批与已驳回不计入</div></div>';
+  return h;
+}
+function bindSummary(){document.getElementById('sfWho').onchange=function(){sumWho=this.value;renderMain()}}
+
+/* ---- F5 花名册 ---- */
+function pgRoster(){
+  var h='<div class="page-head"><h2>花名册 <span class="eyebrow">PRD F5 · US9</span></h2><p>维护名单、指派角色、设置代批人（PRD F2：代批人由 HR 预先设置）；离职人员移除后其历史台账仍保留。</p></div>';
+  h+='<div class="card"><div class="tblwrap"><table class="tbl"><tr><th>姓名</th><th>角色</th><th>说明</th><th style="width:120px">操作</th></tr>';
+  state.roster.forEach(function(u){
+    h+='<tr><td><b>'+esc(u.name)+'</b></td><td><select class="inp" style="width:110px;padding:4px 6px" onchange="setRole(\''+u.id+'\',this.value)">';
+    Object.keys(ROLES).forEach(function(r){h+='<option value="'+r+'"'+(u.role===r?' selected':'')+'>'+ROLES[r]+'</option>'});
+    h+='</select></td><td style="color:var(--sub);font-size:12.5px">';
+    h+=u.role==='manager'?'其本人请假自动转代批主管处理':(u.role==='delegate'?'代批张伟经理的申请与其本人的待办':'');
+    h+=(u.role==='manager'&&!hasDelegate()?'<span style="color:var(--no)"> ⚠ 未设置代批人</span>':'');
+    h+='</td><td><button class="btn sm dngr" onclick="removeUser(\''+u.id+'\')">移除</button></td></tr>';
+  });
+  h+='</table></div><div style="margin-top:14px;display:flex;gap:10px;align-items:center"><input class="inp" id="rNew" placeholder="新员工姓名" style="max-width:180px"><button class="btn sm sec" onclick="addUser()">加入花名册</button></div></div>';
+  return h;
+}
+function hasDelegate(){return state.roster.some(function(u){return u.role==='delegate'})}
+function setRole(id,r){
+  if(r==='delegate'&&hasDelegate()){var old=state.roster.find(function(u){return u.role==='delegate'});if(old.id!==id){toast('已存在代批主管 '+old.name+'，已改为普通员工');old.role='employee'}}
+  for(var i=0;i<state.roster.length;i++)if(state.roster[i].id===id)state.roster[i].role=r;
+  save();toast('角色已更新');renderMain();
+}
+function addUser(){
+  var n=document.getElementById('rNew').value.trim();
+  if(!n){toast('请输入姓名');return}
+  state.roster.push({id:uid(),name:n,role:'employee'});
+  save();toast('已加入 '+n);renderMain();
+}
+function removeUser(id){
+  var u=user(id);
+  if(u.role==='manager'&&state.leaves.some(function(l){return l.status==='待审批'})){toast('有待审批申请，请先处理再移除经理');return}
+  openModal('<h3>移除 '+esc(u.name)+'？</h3><p style="color:var(--sub);font-size:13px">移除后其无法登录，历史台账记录保留。此操作不可撤销。</p><div class="acts"><button class="btn sm sec" onclick="closeModal()">取消</button><button class="btn sm dngr" onclick="doRemove(\''+id+'\')">确认移除</button></div>');
+}
+function doRemove(id){
+  state.roster=state.roster.filter(function(u){return u.id!==id});
+  if(me&&me.id===id){logout();return}
+  save();closeModal();toast('已移除');renderMain();
+}
+
+/* ---- F6 数据管理 ---- */
+function pgData(){
+  var h='<div class="page-head"><h2>数据管理 <span class="eyebrow">PRD F6</span></h2><p>数据仅存于本机浏览器 localStorage（原型演示形态；正式版为服务端集中存储）。</p></div>';
+  h+='<div class="card"><h3>备份与导出</h3>';
+  h+='<div style="display:flex;gap:12px;flex-wrap:wrap">';
+  h+='<button class="btn sec" onclick="exportAll()">一键导出全量数据（JSON）</button>';
+  h+='<span class="hint" style="align-self:center">P0 · 首版必须提供（PRD F6）</span></div>';
+  h+='<div style="margin-top:12px;padding:10px 14px;background:var(--wait-bg);border-radius:6px;font-size:12.5px;color:var(--wait)">每日自动备份为 <b>P1 上线后加固项</b>（PRD F6），原型暂不演示。</div></div>';
+  h+='<div class="card"><h3>演示数据</h3><p class="hint" style="margin-bottom:12px">当前 '+state.roster.length+' 名成员 · '+state.leaves.length+' 张请假单。重置将恢复初始演示场景（含 1 条超时可催办、1 条经理假待代批）。</p>';
+  h+='<button class="btn dngr" onclick="resetDemo()">重置演示数据</button></div>';
+  return h;
+}
+function exportAll(){
+  download('请假系统全量数据-'+iso(new Date())+'.json',JSON.stringify({exportAt:new Date().toISOString(),roster:state.roster,leaves:state.leaves},null,2),'application/json');
+  toast('已导出全量数据');
+}
+function resetDemo(){
+  openModal('<h3>重置演示数据？</h3><p style="color:var(--sub);font-size:13px">当前所有演示操作将被清除，恢复到初始场景。</p><div class="acts"><button class="btn sm sec" onclick="closeModal()">取消</button><button class="btn sm dngr" onclick="doReset()">确认重置</button></div>');
+}
+function doReset(){localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_SES);location.reload()}
+
+/* ---- modal / 启动 ---- */
+function openModal(html){document.getElementById('modalBox').innerHTML=html;document.getElementById('mask').classList.add('show')}
+function closeModal(){document.getElementById('mask').classList.remove('show')}
+document.getElementById('mask').addEventListener('click',function(e){if(e.target.id==='mask')closeModal()});
+
+load();
+renderLogin();
+var savedSes=null;try{savedSes=localStorage.getItem(LS_SES)}catch(e){}
+if(savedSes&&user(savedSes)){login(savedSes)}
+</script>
+</body>
+</html>
