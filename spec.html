@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>员工请假管理系统 · 需求规格说明书（SPEC v1.0）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    background: #fff; color: #2c3e50;
+    font-size: 14px; line-height: 1.7;
+  }
+  .page { max-width: 860px; margin: 0 auto; padding: 32px 28px 64px; }
+  header {
+    border-bottom: 3px solid #2f6fb3; padding-bottom: 16px; margin-bottom: 28px;
+  }
+  header h1 { font-size: 22px; color: #1a4f8a; font-weight: 700; }
+  header .sub { color: #5a7a99; font-size: 13px; margin-top: 6px; }
+  .meta {
+    display: flex; gap: 24px; flex-wrap: wrap; margin-top: 12px;
+    font-size: 12.5px; color: #47617a;
+  }
+  .meta b { color: #1a4f8a; }
+  .badge {
+    display: inline-block; background: #e6f2fb; color: #2f6fb3;
+    border: 1px solid #b9d7ef; border-radius: 3px;
+    padding: 0 8px; font-size: 12px; margin-left: 6px; vertical-align: 2px;
+  }
+  section { margin-bottom: 30px; }
+  h2 {
+    font-size: 16.5px; color: #1a4f8a;
+    border-left: 4px solid #2f6fb3; padding-left: 10px;
+    margin-bottom: 12px;
+  }
+  h3 { font-size: 14.5px; color: #2f6fb3; margin: 14px 0 6px; }
+  p { margin-bottom: 8px; }
+  ul, ol { padding-left: 22px; margin-bottom: 8px; }
+  li { margin-bottom: 4px; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 10px 0 14px;
+    font-size: 13px; background: #fff;
+  }
+  th, td { border: 1px solid #cfe2f3; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #e6f2fb; color: #1a4f8a; font-weight: 600; white-space: nowrap; }
+  tr:nth-child(even) td { background: #f7fbfe; }
+  .card {
+    background: #f4f9fd; border: 1px solid #d5e7f5; border-radius: 6px;
+    padding: 12px 16px; margin: 10px 0;
+  }
+  .callout {
+    background: #fdfaf0; border: 1px solid #ecdfb8; border-left: 4px solid #d9b44a;
+    padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 13px;
+  }
+  .num { display: inline-block; background: #2f6fb3; color: #fff; border-radius: 50%; width: 20px; height: 20px; text-align: center; line-height: 20px; font-size: 12px; margin-right: 6px; }
+  footer {
+    margin-top: 40px; padding-top: 14px; border-top: 1px solid #d5e7f5;
+    font-size: 12px; color: #7a94ab; text-align: center;
+  }
+  .tag { display: inline-block; font-size: 12px; color: #47617a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>员工请假管理系统 · 需求规格说明书 <span class="badge">SPEC v1.0</span></h1>
+  <div class="sub">基于苏格拉底式需求梳理（十问十答）整理产出，供评审确认后进入实施阶段</div>
+  <div class="meta">
+    <span><b>日期：</b>2026-09-18</span>
+    <span><b>版本：</b>v1.0</span>
+    <span><b>状态：</b>待确认</span>
+    <span><b>梳理方式：</b>10 轮引导式问答</span>
+  </div>
+</header>
+
+<!-- 1. Problem Statement -->
+<section id="s1">
+  <h2><span class="num">1</span>Problem Statement（问题陈述）</h2>
+  <p>本部门（15~50 人）目前的请假管理依赖口头/微信请假与纸质单据、Excel 登记，存在三大核心痛点：</p>
+  <table>
+    <tr><th style="width:90px">痛点</th><th>具体表现</th></tr>
+    <tr><td><b>记录混乱</b></td><td>口头/微信请假为主，缺乏正式留痕记录，月底考勤对不上账，请假事实无据可查。</td></tr>
+    <tr><td><b>统计费力</b></td><td>纸质单据或 Excel 分散登记，统计汇总需人工逐条翻账，费时费力且容易出错。</td></tr>
+    <tr><td><b>审批低效</b></td><td>审批靠人肉催办，领导容易漏看漏批；员工不知道流程走到哪一步，体验差。</td></tr>
+  </table>
+  <p>三个痛点相互放大：无记录导致统计困难，统计困难导致审批与考勤脱节，最终形成"请假靠催、月底靠猜"的局面。需要一套轻量的、部门可自主掌控的请假管理系统把流程电子化、数据集中化。</p>
+</section>
+
+<!-- 2. Proposed Solution -->
+<section id="s2">
+  <h2><span class="num">2</span>Proposed Solution（方案描述）</h2>
+  <p>建设一套<b>部门级轻量请假管理系统</b>，以"局域网小服务 + 浏览器访问"形态运行：</p>
+  <ol>
+    <li><b>一个双击即启的绿色小服务</b>部署在经理/HR 的电脑上（免安装），全部门通过浏览器访问内网地址（如 http://内网IP:端口），数据集中存储一份，形成全部门唯一的"共同账本"。</li>
+    <li><b>员工</b>登录后填写请假申请（类型、起止时间、事由），提交即进入审批流；<b>经理</b>（或代批人）在站内待办列表中审批（通过/驳回+意见），支持员工一键催办并高亮提示。</li>
+    <li><b>台账自动生成</b>：审批结果实时沉淀为流水记录，HR/经理可按月查看部门台账、按人查看年度汇总，并一键导出文件交给公司 HR/财务。</li>
+    <li><b>数据安全兜底</b>：系统每日自动备份，支持一键导出全量数据。</li>
+  </ol>
+  <div class="callout">核心思路：不追求企业级大而全，聚焦"提交—审批—台账"最短闭环，把三大痛点逐一对位解决：留痕（治记录混乱）、自动汇总（治统计费力）、待办+催办（治审批低效）。</div>
+</section>
+
+<!-- 3. Target Users -->
+<section id="s3">
+  <h2><span class="num">3</span>Target Users（目标用户）</h2>
+  <p>部门级使用，规模 15~50 人，共三类角色：</p>
+  <table>
+    <tr><th style="width:130px">角色</th><th style="width:80px">人数</th><th>职责与核心操作</th></tr>
+    <tr><td><b>员工</b></td><td>绝大多数</td><td>提交请假申请、查看自己的请假记录与审批进度、催办</td></tr>
+    <tr><td><b>部门经理 / 代批主管</b></td><td>1 人 + 若干代批</td><td>审批（通过/驳回+意见）；经理请假或出差期间由指定主管代批</td></tr>
+    <tr><td><b>HR / 行政</b></td><td>1~2 人</td><td>维护花名册、查看部门月度台账与个人年度汇总、导出数据、执行备份</td></tr>
+  </table>
+  <p class="tag">说明：使用环境为部门内部互信场景，登录采用花名册免密模式（见技术约束）。</p>
+</section>
+
+<!-- 4. Core Features -->
+<section id="s4">
+  <h2><span class="num">4</span>Core Features（核心功能）</h2>
+
+  <h3>4.1 请假申请（员工）</h3>
+  <ul>
+    <li>支持 7 种请假类型：事假、病假、年假、婚假、产假/陪产假、丧假、调休</li>
+    <li>填写要素：请假类型、开始/结束日期时间、时长（自动计算天数）、事由说明</li>
+    <li><b>只记流水，不做余额管控</b>：审批通过即记录一笔流水，年假/调休余额由年底人工核对（见 Non-goals）</li>
+    <li>可查看本人全部历史记录及当前审批状态（待审批/已通过/已驳回）</li>
+  </ul>
+
+  <h3>4.2 审批（经理 / 代批人）</h3>
+  <ul>
+    <li>单级审批：申请默认流转部门经理</li>
+    <li>代批机制：经理请假/出差时可由预指定主管代批，代批记录留痕</li>
+    <li>审批动作：通过 / 驳回（驳回需填写意见）</li>
+  </ul>
+
+  <h3>4.3 通知与提醒（全员）</h3>
+  <ul>
+    <li>站内待办列表：经理登录后首页可见"待我审批"队列，红点数量提示</li>
+    <li>催办按钮：员工可对超时未审的申请点击"催办"，催办记录高亮显示在审批人页面</li>
+    <li>不做外部推送（邮件/企业微信/钉钉等），信息传递全部在站内完成</li>
+  </ul>
+
+  <h3>4.4 台账与统计（HR / 经理）</h3>
+  <ul>
+    <li>部门月度台账：按月查看全员请假流水（人员/类型/起止时间/天数/审批人/审批结果），支持按人、按类型筛选</li>
+    <li>个人年度汇总：每人的年度各类假期累计使用天数一览</li>
+    <li>导出文件：支持导出 CSV/Excel，用于月底向公司 HR 或财务报送</li>
+  </ul>
+
+  <h3>4.5 花名册与数据管理（HR）</h3>
+  <ul>
+    <li>花名册维护：员工名单、角色指派（员工/经理/代批人/HR）、人员入离调整</li>
+    <li>数据备份：每日自动备份 + 一键手动导出全量数据</li>
+  </ul>
+</section>
+
+<!-- 5. Technical Constraints -->
+<section id="s5">
+  <h2><span class="num">5</span>Technical Constraints（技术约束）</h2>
+  <table>
+    <tr><th style="width:120px">约束项</th><th>要求</th></tr>
+    <tr><td><b>部署形态</b></td><td>局域网小服务：单个绿色免安装程序，双击启动；运行于经理/HR 的办公电脑；服务关闭时全员不可访问（需保持常开）</td></tr>
+    <tr><td><b>访问方式</b></td><td>全部门通过浏览器访问 <code>http://内网IP:端口</code>，无需安装任何客户端；桌面浏览器为主，手机浏览器可做基础适配</td></tr>
+    <tr><td><b>数据存储</b></td><td>集中式存储于服务端本地文件，全员共享唯一数据源；每日自动备份</td></tr>
+    <tr><td><b>前端技术</b></td><td>纯原生 HTML/CSS/JS，零外部依赖；界面风格：白底、淡蓝主色、简洁紧凑</td></tr>
+    <tr><td><b>登录认证</b></td><td>花名册免密：登录页从预置名单中选择本人身份进入，不设密码（部门内部互信环境）</td></tr>
+    <tr><td><b>并发规模</b></td><td>≤50 人低频操作，无需高并发架构设计</td></tr>
+    <tr><td><b>数据安全</b></td><td>每日自动备份；支持一键导出全量数据；不依赖外网，断网不影响使用</td></tr>
+  </table>
+</section>
+
+<!-- 6. Non-goals -->
+<section id="s6">
+  <h2><span class="num">6</span>Non-goals（明确不做的事）</h2>
+  <table>
+    <tr><th style="width:220px">不做的事项</th><th>理由 / 替代方案</th></tr>
+    <tr><td>假期余额/额度自动管控</td><td>只记流水；年假/调休余额由年底人工核对，保持系统轻量</td></tr>
+    <tr><td>多级审批（主管→经理→HR 等）</td><td>部门级单级审批+代批已满足，多级审批徒增复杂度</td></tr>
+    <tr><td>外部推送（邮件/企业微信/钉钉）</td><td>避免外部服务依赖，站内待办+催办已覆盖提醒需求</td></tr>
+    <tr><td>考勤打卡联动</td><td>不对接打卡机/考勤系统，不对账打卡明细</td></tr>
+    <tr><td>薪酬扣款计算</td><td>病事假扣薪、调休折算等规则复杂，交由财务处理，系统只提供天数数据</td></tr>
+    <tr><td>加班登记</td><td>不登记加班时长，调休仅作为一种请假类型记录</td></tr>
+    <tr><td>独立 App / 小程序</td><td>只做网页端，手机通过浏览器访问（可做基础响应式适配）</td></tr>
+  </table>
+  <div class="callout">以上边界经需求梳理逐项确认。若后续规模扩大（如跨部门）或需要余额管控，再立项扩展，本期不预留过度设计。</div>
+</section>
+
+<!-- 7. Success Criteria -->
+<section id="s7">
+  <h2><span class="num">7</span>Success Criteria（成功标准）</h2>
+  <table>
+    <tr><th style="width:160px">验收标准</th><th style="width:100px">衡量方式</th><th>目标值</th></tr>
+    <tr><td><b>全员会用</b></td><td>采用率</td><td>上线 1 周内，全员至少成功提交过 1 次申请，基本不需要专门培训</td></tr>
+    <tr><td><b>台账 5 分钟出表</b></td><td>效率</td><td>月度台账导出从人工翻账约半天缩短到 5 分钟以内（筛选+导出+核对）</td></tr>
+  </table>
+  <p class="tag">技术保障项（非验收标准）：每日自动备份可恢复、数据集中不丢失。</p>
+</section>
+
+<!-- 附录 -->
+<section id="appendix">
+  <h2>附录：需求梳理问答记录</h2>
+  <table>
+    <tr><th style="width:40px">#</th><th style="width:170px">问题主题</th><th>确认结论</th></tr>
+    <tr><td>1</td><td>背景与痛点</td><td>记录混乱、统计费力、审批低效（三痛点并立）</td></tr>
+    <tr><td>2</td><td>用户与规模</td><td>部门级 15~50 人；员工/经理（代批）/HR 三类角色</td></tr>
+    <tr><td>3</td><td>假期类型与额度</td><td>基础三类+法定补充类共 7 种；只记流水不管余额</td></tr>
+    <tr><td>4</td><td>审批流程</td><td>经理审批为主，可指定代批人</td></tr>
+    <tr><td>5</td><td>通知与提醒</td><td>站内待办列表+催办按钮，不做外部推送</td></tr>
+    <tr><td>6</td><td>统计与台账</td><td>部门月度台账+个人年度汇总+导出文件（不做图表）</td></tr>
+    <tr><td>7</td><td>部署与存储</td><td>局域网小服务，双击启动，数据集中存储</td></tr>
+    <tr><td>8</td><td>身份与安全</td><td>花名册免密登录；每日自动备份+一键导出</td></tr>
+    <tr><td>9</td><td>明确不做的事</td><td>考勤联动、薪酬计算、加班登记、App 全部不做</td></tr>
+    <tr><td>10</td><td>成功标准</td><td>全员会用（1 周内）+ 台账 5 分钟出表</td></tr>
+  </table>
+</section>
+
+<footer>员工请假管理系统 SPEC v1.0 · 2026-09-18 · 经确认后进入实施阶段</footer>
+</div>
+</body>
+</html>
